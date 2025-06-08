@@ -1,0 +1,57 @@
+import threading
+import time
+import random
+
+# Завдання 1: Зворотній відлік
+def countdown():
+    for i in range(10, 0, -1):
+        print(f"[Відлік] {i}")
+        time.sleep(1)
+
+t1 = threading.Thread(target=countdown)
+t1.start()
+
+# Завдання 2: Симуляція завантаження
+def download_file(file_id):
+    duration = random.randint(3, 5)
+    print(f"[Завантаження] Файл {file_id} ({duration} сек)...")
+    time.sleep(duration)
+    print(f"[Завершено] Файл {file_id}!")
+
+threads = []
+
+for i in range(1, 4):                       # 3 потоки для 3 файлів
+    t = threading.Thread(target=download_file, args=(i,))
+    threads.append(t)
+    t.start()
+
+# Завдання 3: Паралельна обробка великого списку
+data = [random.randint(1, 100) for _ in range(1000)]
+results = []
+results_lock = threading.Lock()
+
+def compute_sum(part):
+    s = sum(part)
+    with results_lock:
+        results.append(s)
+
+chunk_size = len(data) // 4
+parts = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
+
+sum_threads = []
+
+for part in parts:
+    t = threading.Thread(target=compute_sum, args=(part,))
+    sum_threads.append(t)
+    t.start()
+
+t1.join()
+
+for t in threads:
+    t.join()
+
+for t in sum_threads:
+    t.join()
+
+print(f"[Результати] Суми частин: {results}")
+print(f"[Підсумок] Загальна сума: {sum(results)}")
